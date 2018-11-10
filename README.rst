@@ -9,6 +9,23 @@ dontforget
 
 A decorator to keep results around for later
 
+.. code-block:: python
+
+    >>> from dontforget import cached
+    >>> from time import sleep
+    >>> 
+    >>> @cached
+    ... def long_running():
+    ...     print('Doing an expensive API call...')
+    ...     sleep(5)
+    ...     return 42
+    ... 
+    >>> long_running()
+    Doing an expensive API call...
+    42
+    >>> long_running()
+    42
+
 Description
 -----------
 
@@ -43,25 +60,4 @@ Don't consider using ``dontforget`` when:
 
 * You call out to a live data source and don't want stale results
 * Your disk won't live long enough to use the data you've hived off
-  
-Usage examples
---------------
-
-
-.. code-block:: python
-
-    >>> from dontforget import cached
-    >>> from time import sleep
-    >>> 
-    >>> @cached
-    ... def long_running():
-    ...     print('Doing an expensive API call...')
-    ...     sleep(5)
-    ...     return 42
-    ... 
-    >>> long_running()
-    Doing an expensive API call...
-    42
-    >>> long_running()
-    42
 
