@@ -30,7 +30,8 @@ Description
 -----------
 
 ``dontforget`` provides a caching decorator that you can apply to your
-long-running functions to keep their outputs around for later.
+long-running functions to keep their outputs around for later. Results
+are saved to local disk, so they'll still be around when you come back.
 
 ``dontforget`` is like ``functools.lru_cache()`` except that you get to
 keep the results around between runs. It comes in handy when you have
@@ -50,8 +51,8 @@ Use cases
 
 Consider using ``dontforget`` when:
 
-* You want to keep results around _between_ runs - so an ``lru_cache`` won't cut it
-* You are will to trade disk space for speed
+* You want to keep results around *between* runs - so an ``lru_cache`` won't cut it
+* You are willing to trade disk space for speed
 * You have pure functions whose results don't change between invocations.
 
 Don't consider using ``dontforget`` when:
