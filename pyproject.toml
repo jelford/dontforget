@@ -7,4 +7,11 @@ module = "dontforget"
 author = "James Elford"
 author-email = "james.p.elford@gmail.com"
 home-page = "https://github.com/jelford/dontforget"
-classifiers = ["License :: OSI Approved :: Apache Software License"]
+requires-python = '>=3.6'
+keywords = 'caching'
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
