@@ -11,9 +11,66 @@ import pickle
 import gzip
 import json
 
+__all__ = ['set_hash_customization', 'set_storage_directory', 'cached']
 
-_CACHED_ABSENT_MARKER = object()
+def set_hash_customization(custom_hash_data: bytes):
+    """
+    Before using any hashed function, you may personalize the hash key used by
+    dontforget with data of your own. Use this to bust the cache, for example
+    between deployments of your software, enabling parallel tests to run against
+    the same cache, or when the internals of your classes have changed in such
+    a way as to make unpickling unsafe.
+
+    :param custom_hash_data: up to 16 bytes of data which will be used to personalize
+    the hash function.
+    """
+    global _custom_hash_data
+    if len(custom_hash_data) > 16:
+        raise ValueError('custom_hash_data too large to be used for hash personalization')
+    
+    _custom_hash_data = custom_hash_data
+
+
+def set_storage_directory(new_cache_root: Path):
+    """
+    :param new_cache_root: choose a new storage location for dontforget's data.
+    """
+    global _cache_root
+    _cache_root = Path(new_cache_root)
+
+
+def cached(func):
+    """
+    Function decorator that caches the results of invocations to the local file system.
+
+    :param func: The function to cache must take only hashable arguments, 
+    or dictionaries with hashable keys and values. The function's output
+    must be pickleable.
+    """
+    global _CACHED_ABSENT_MARKER
+    makedirs(_cache_root, exist_ok=True)
+
+    @wraps(func)
+    def cached_func(*args, **kwargs):
+        key = _cache_key_from(func, *args, **kwargs)
+
+        cached_value = _lookup_in_cache(key)
+
+        if cached_value is _CACHED_ABSENT_MARKER:
+            return None
+        elif cached_value is not None:
+            return cached_value
+
+        loaded_value = func(*args, **kwargs)
+
+        _put_in_cache(key, loaded_value)
+        return loaded_value
+
+    return cached_func
+
+
 _cache_root = Path.cwd() / '.dontforget-cache'
+_CACHED_ABSENT_MARKER = object()
 
 class UnrecognizedCacheEncodingException(RuntimeError):
     pass
@@ -21,36 +78,24 @@ class UnrecognizedCacheEncodingException(RuntimeError):
 
 _custom_hash_data = b'dontforget'+__version__.encode('utf-8')
 
-def set_hash_customization(custom_hash_data: bytes):
-    """
-    
-    """
-    global _custom_hash_data
-    if len(custom_hash_data > 16):
-        raise ValueError('custom_hash_data too large to be used for hash personalization')
-    
-    _custom_hash_data = custom_hash_data
-
-
-def set_storage_directory(new_cache_root: Path):
-    global _cache_root
-    _cache_root = Path(new_cache_root)
 
 def _cache_key_from(func, *args, **kwargs):
     h = blake2b(digest_size=32, person=_custom_hash_data)
-    print(f'Customizing hash: {_custom_hash_data}')
     
     h.update(func.__name__.encode('utf-8'))
     h.update(func.__code__.co_code)
+    h.update(str(func.__code__.co_consts).encode('utf-8'))
+    h.update(str(func.__defaults__).encode('utf-8'))
+    h.update(str(func.__kwdefaults__).encode('utf-8'))
 
     for a in args:
-        a_as_bytes = f'{a}'.encode('utf-8')
+        a_as_bytes = f'{hash(a)}'.encode('utf-8')
         h.update(a_as_bytes)
 
     for k, v in kwargs.items():
-        k_as_bytes = f'{k}'.encode('utf-8')
+        k_as_bytes = f'{hash(k)}'.encode('utf-8')
         h.update(k_as_bytes)
-        v_as_bytes = f'{_cache_key_from(v)}'.encode('utf-8')
+        v_as_bytes = f'{hash(v)}'.encode('utf-8')
         h.update(v_as_bytes)
     
     return f'{func.__name__}-{h.hexdigest()}'
@@ -139,27 +184,3 @@ def _lookup_in_cache(key):
     decompressed = gzip.decompress(content)
     decoded = _decode(decompressed, format)
     return decoded
-
-
-def cached(func):
-    global _CACHED_ABSENT_MARKER
-    makedirs(_cache_root, exist_ok=True)
-
-    @wraps(func)
-    def cached_func(*args, **kwargs):
-        key = _cache_key_from(func, *args, **kwargs)
-
-        cached_value = _lookup_in_cache(key)
-
-        if cached_value is _CACHED_ABSENT_MARKER:
-            return None
-        elif cached_value is not None:
-            return cached_value
-
-        loaded_value = func(*args, **kwargs)
-
-        _put_in_cache(key, loaded_value)
-        return loaded_value
-
-    return cached_func
-
