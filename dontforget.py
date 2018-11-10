@@ -1,6 +1,6 @@
 """Cache the results of expensive functions"""
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 from pathlib import Path
 from os import makedirs
