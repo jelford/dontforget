@@ -2,9 +2,9 @@
 set -eo pipefail
 
 if [[ "$VIRTUAL_ENV" == "" ]]; then
-    pip install pipenv
-else
     pip install --user pipenv
+else
+    pip install pipenv
 fi
 
 pipenv check
