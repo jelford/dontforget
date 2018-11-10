@@ -1,0 +1,16 @@
+language: python
+python:
+  - "3.6"
+  - "3.7"
+install:
+  - ci/install.sh
+script:
+  - ci/run_tests.sh
+deploy:
+  provider: pypi
+  user: "jelford"
+  password: $PYPI_PASSWORD
+  on:
+    branch: master
+    tags: true
+
