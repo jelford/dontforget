@@ -40,8 +40,7 @@ but the results are unlikely to change between one run and the next.
 ``dontforget`` is smart enough to bust your cache when:
 
 * Your arguments change - hopefully that goes without saying; or
-* Your function body changes - so you aren't re-using results from a
-computation you no longer care about
+* Your function body changes - so you aren't re-using results from a computation you no longer care about
 
 ``dontforget`` also accepts a cache-busting key to enable you to flush
 state between releases, or whenever you feel like it.
@@ -51,8 +50,7 @@ Use cases
 
 Consider using ``dontforget`` when:
 
-* You want to keep results around _between_ runs - so an ``lru_cache``
-won't cut it
+* You want to keep results around _between_ runs - so an ``lru_cache`` won't cut it
 * You are will to trade disk space for speed
 * You have pure functions whose results don't change between invocations.
 
