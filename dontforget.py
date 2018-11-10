@@ -10,11 +10,13 @@ import sqlite3
 import pickle
 import gzip
 import json
+from typing import Callable, Tuple, Optional, Any
+
 
 __all__ = ["set_hash_customization", "set_storage_directory", "cached"]
 
 
-def set_hash_customization(custom_hash_data: bytes):
+def set_hash_customization(custom_hash_data: bytes) -> None:
     """
     Before using any hashed function, you may personalize the hash key used by
     dontforget with data of your own. Use this to bust the cache, for example
@@ -34,7 +36,7 @@ def set_hash_customization(custom_hash_data: bytes):
     _custom_hash_data = custom_hash_data
 
 
-def set_storage_directory(new_cache_root: Path):
+def set_storage_directory(new_cache_root: Path) -> None:
     """
     :param new_cache_root: choose a new storage location for dontforget's data.
     """
@@ -42,7 +44,7 @@ def set_storage_directory(new_cache_root: Path):
     _cache_root = Path(new_cache_root)
 
 
-def cached(func):
+def cached(func: Callable) -> Callable:
     """
     Function decorator that caches the results of invocations to the local file system.
 
@@ -83,7 +85,7 @@ class UnrecognizedCacheEncodingException(RuntimeError):
 _custom_hash_data = b"dontforget" + __version__.encode("utf-8")
 
 
-def _cache_key_from(func, *args, **kwargs):
+def _cache_key_from(func, *args, **kwargs) -> str:
     h = blake2b(digest_size=32, person=_custom_hash_data)
 
     h.update(func.__name__.encode("utf-8"))
@@ -105,7 +107,7 @@ def _cache_key_from(func, *args, **kwargs):
     return f"{func.__name__}-{h.hexdigest()}"
 
 
-def _encode(data):
+def _encode(data) -> Tuple[Optional[bytes], Optional[str]]:
     if data is None:
         return None, None
     if type(data) == str:
@@ -118,7 +120,7 @@ def _encode(data):
     return pickle.dumps(data), "pickle"
 
 
-def _decode(data, format):
+def _decode(data, format) -> Any:
     if format == "str/utf-8":
         return data.decode("utf-8")
     if format == "json/utf-8":
@@ -129,14 +131,15 @@ def _decode(data, format):
         raise UnrecognizedCacheEncodingException(format)
 
 
-def _put_in_cache(key, value):
+def _put_in_cache(key, value) -> None:
 
     if value is not None:
         encoded_data, data_format = _encode(value)
-        data_to_cache = gzip.compress(encoded_data, 9)
+        data_to_cache: Optional[bytes] = gzip.compress(encoded_data, 9)
+        assert data_to_cache is not None  # for mypy
         absent_marker = 0
         if len(data_to_cache) < 4000:
-            contents_for_db = data_to_cache
+            contents_for_db: Optional[bytes] = data_to_cache
             path_to_file = None
         else:
             contents_for_db = None
@@ -161,7 +164,7 @@ def _put_in_cache(key, value):
         )
 
 
-def _lookup_in_cache(key):
+def _lookup_in_cache(key) -> Any:
     with sqlite3.connect(str(_cache_root / "index.db")) as conn:
         cursor = conn.cursor()
         try:
