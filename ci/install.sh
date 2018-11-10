@@ -1,6 +1,11 @@
 #! /usr/bin/env bash
-set -euo pipefail
+set -eo pipefail
 
-pip install --user pipenv
+if [[ "$VIRTUAL_ENV" == "" ]]; then
+    pip install pipenv
+else
+    pip install --user pipenv
+fi
+
 pipenv check
 pipenv sync --dev
