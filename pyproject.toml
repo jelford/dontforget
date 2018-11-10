@@ -1,0 +1,10 @@
+[build-system]
+requires = ["flit"]
+build-backend = "flit.buildapi"
+
+[tool.flit.metadata]
+module = "dontforget"
+author = "James Elford"
+author-email = "james.p.elford@gmail.com"
+home-page = "https://github.com/jelford/dontforget"
+classifiers = ["License :: OSI Approved :: Apache Software License"]

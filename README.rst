@@ -4,8 +4,8 @@ dontforget
 .. image:: https://travis-ci.org/jelford/dontforget.svg?branch=master
     :target: https://travis-ci.org/jelford/dontforget
 
-.. image:: https://img.shields.io/pypi/v/activesoup.svg?maxAge=2592000
-    :target: https://pypi.python.org/pypi?:action=display&name=activesoup
+.. image:: https://img.shields.io/pypi/v/dontforget.svg?maxAge=2592000
+    :target: https://pypi.python.org/pypi?:action=display&name=dontforget
 
 A decorator to keep results around for later
 
